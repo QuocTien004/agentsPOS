@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Tables - Billiards POS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if edit_mode %}Edit Table Price{% else %}Manage Tables{% endif %}</h1>
+</div>
+
+{% if edit_mode %}
+    <div class="edit-form-container">
+        <div class="form-card">
+            <h2>Edit Table: {{ table_name }}</h2>
+            <form method="POST" action="{{ url_for('edit_table_price', table_id=edit_table_id) }}" class="form">
+                <div class="form-group">
+                    <label for="price_per_hour">Price per Hour:</label>
+                    <input type="number" id="price_per_hour" name="price_per_hour" value="{{ current_price }}" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                    <a href="{{ url_for('admin_tables') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% else %}
+    <div class="admin-section">
+        <h2>Add New Table</h2>
+        <div class="form-card">
+            <form method="POST" action="{{ url_for('admin_tables') }}" class="form">
+                <div class="form-group">
+                    <label for="table_name">Table Name:</label>
+                    <input type="text" id="table_name" name="table_name" placeholder="e.g., Table 1, Premium Table A" required>
+                </div>
+                <div class="form-group">
+                    <label for="price_per_hour">Price per Hour ($):</label>
+                    <input type="number" id="price_per_hour" name="price_per_hour" placeholder="10.00" step="0.01" min="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-success">Add Table</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <h2>Existing Tables</h2>
+        {% if tables %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Table Name</th>
+                        <th>Status</th>
+                        <th>Price/Hour</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for table in tables %}
+                        <tr>
+                            <td>{{ table.table_name }}</td>
+                            <td><span class="status-badge status-badge-{{ table.status }}">{{ table.status }}</span></td>
+                            <td>${{ "%.2f"|format(table.price_per_hour) }}</td>
+                            <td>
+                                <a href="{{ url_for('edit_table_price', table_id=table.id) }}" class="btn btn-sm btn-secondary">Edit Price</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty-state">No tables yet. Add one above to get started.</p>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

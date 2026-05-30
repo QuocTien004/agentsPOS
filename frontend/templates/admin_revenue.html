@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Revenue Report - Billiards POS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Revenue Report</h1>
+    <p>Financial summary and session analytics</p>
+</div>
+
+<div class="filter-section">
+    <form method="GET" class="filter-form">
+        <div class="form-group">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </form>
+</div>
+
+<div class="report-grid">
+    <div class="report-card">
+        <div class="report-label">Total Revenue</div>
+        <div class="report-value">${{ "%.2f"|format(report.total_revenue) }}</div>
+    </div>
+    <div class="report-card">
+        <div class="report-label">Sessions</div>
+        <div class="report-value">{{ report.session_count }}</div>
+    </div>
+    <div class="report-card">
+        <div class="report-label">Avg per Session</div>
+        <div class="report-value">${{ "%.2f"|format(report.avg_charge_per_session) }}</div>
+    </div>
+</div>
+
+<div class="report-period">
+    <p><strong>Report Period:</strong> {{ start_date }} to {{ end_date }}</p>
+</div>
+
+<div class="action-buttons">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

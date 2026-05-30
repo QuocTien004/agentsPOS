@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Session - {{ table_name }} - Billiards POS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ table_name }} - Active Session</h1>
+</div>
+
+<div class="session-container">
+    <div class="session-card">
+        <div class="session-info">
+            <div class="info-row">
+                <span class="info-label">Table:</span>
+                <span class="info-value">{{ table_name }} (ID: {{ table_id }})</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Started:</span>
+                <span class="info-value">{{ start_time }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Duration:</span>
+                <span class="info-value" id="duration-display">{{ duration_mins }} minutes</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Price per Hour:</span>
+                <span class="info-value">${{ "%.2f"|format(price_per_hour) }}</span>
+            </div>
+            <div class="info-row highlight">
+                <span class="info-label">Current Charge:</span>
+                <span class="info-value info-charge" id="current-charge">${{ "%.2f"|format(current_charge) }}</span>
+            </div>
+        </div>
+
+        <div class="session-actions">
+            <form method="POST" action="{{ url_for('close_table_route', session_id=session_id) }}" style="width: 100%;">
+                <button type="submit" class="btn btn-danger btn-large">Close Table & Pay</button>
+            </form>
+            <a href="{{ url_for('tables') }}" class="btn btn-secondary">Back to Tables</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Update charge every 10 seconds
+    const sessionId = {{ session_id }};
+    const pricePerHour = {{ price_per_hour }};
+    const startTime = new Date('{{ start_time }}').getTime();
+
+    function updateCharge() {
+        const now = new Date().getTime();
+        const durationMs = now - startTime;
+        const durationHours = durationMs / (1000 * 60 * 60);
+        const charge = (durationHours * pricePerHour).toFixed(2);
+        const durationMins = Math.floor(durationMs / (1000 * 60));
+        
+        document.getElementById('duration-display').textContent = durationMins + ' minutes';
+        document.getElementById('current-charge').textContent = '$' + charge;
+    }
+
+    setInterval(updateCharge, 10000);
+</script>
+{% endblock %}
