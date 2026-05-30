@@ -1,0 +1,7 @@
+# Runtime DB + caches generated when the POS app runs/tests.
+*.db
+_smoke.db
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
