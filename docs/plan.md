@@ -4,20 +4,18 @@
 
 ## `workspace/backend/db.py`
 
-- `get_conn` — Tạo hoặc lấy kết nối SQLite. Tham số: Không. Trả về: sqlite3.Connection object.
-- `init_db` — Khởi tạo cơ sở dữ liệu bằng cách gọi create_billiard_tables_table() và create_table_sessions_table(). Tham số: Không. Trả về: Không.
-- `create_billiard_tables_table` — Tạo bảng billiard_tables với cột: id (PK), table_name (TEXT), status (TEXT: 'available'/'occupied'), price_per_hour (REAL). Tham số: conn (sqlite3.Connection). Trả về: Không.
-- `create_table_sessions_table` — Tạo bảng table_sessions với cột: id (PK), table_id (INTEGER FK → billiard_tables.id), start_time (DATETIME), end_time (DATETIME nullable), total_charge (REAL). Tham số: conn (sqlite3.Connection). Trả về: Không.
-- `validate_price` — Kiểm tra giá bàn có hợp lệ (phải > 0). Tham số: price_per_hour (float). Trả về: True nếu hợp lệ, raise ValueError nếu price <= 0.
-- `check_table_available` — Kiểm tra bàn có sẵn sàng (status='available') hay đang bận (status='occupied'). Tham số: table_id (int). Trả về: True nếu trống, raise Exception nếu đang occupied hoặc table không tồn tại.
+- `get_conn` — Lấy kết nối đến cơ sở dữ liệu SQLite. Input: none. Output: sqlite3.Connection object hoặc None nếu lỗi.
+- `init_db` — Khởi tạo tất cả bảng (tables, sessions, pricing_config) bằng cách gọi các hàm init_*_table(). Input: none. Output: boolean success.
+- `init_tables_table` — Tạo bảng 'tables' với cột: id (INTEGER PRIMARY KEY), name (TEXT), location (TEXT), status (TEXT: trống/đang dùng/bảo trì), created_at (TIMESTAMP). Input: none. Output: boolean success.
+- `init_sessions_table` — Tạo bảng 'sessions' với cột: id (INTEGER PRIMARY KEY), table_id (INTEGER FOREIGN KEY), customer_name (TEXT), start_time (TIMESTAMP), end_time (TIMESTAMP NULL), status (TEXT: mở/đóng), created_at (TIMESTAMP). Input: none. Output: boolean success.
+- `init_pricing_table` — Tạo bảng 'pricing_config' với cột: id (INTEGER PRIMARY KEY), start_hour (INTEGER), end_hour (INTEGER), price_per_hour (REAL), created_at (TIMESTAMP). Input: none. Output: boolean success.
 
 ## `workspace/backend/app.py`
 
-- `login` — Xác thực người dùng (staff hoặc admin) dựa username/password. Lưu role vào session. Tham số: username (str), password (str). Trả về: session_token (str) hoặc raise Exception nếu thất bại.
-- `open_table` — Nhân viên mở bàn: kiểm tra trống (gọi db.check_table_available), tạo record mới trong table_sessions (start_time=now, end_time=NULL), cập nhật status bàn→'occupied'. Tham số: table_id (int). Trả về: session_id (int), raise Exception nếu bàn occupied.
-- `calculate_current_charge` — Tính tiền tạm thời cho session đang mở: lấy start_time từ record, tính duration = (now - start_time) / 3600 giờ, tính charge = duration * price_per_hour (lấy giá từ bảng billiard_tables). Tham số: session_id (int). Trả về: current_charge (float).
-- `close_table` — Đóng bàn & thanh toán: ghi nhận end_time=now, tính total_charge cuối cùng, lưu vào bảng table_sessions, cập nhật status bàn→'available'. Tham số: session_id (int). Trả về: invoice (dict) = {table_name: str, duration_hours: float, total_charge: float}.
-- `get_revenue_report` — Admin xem báo cáo doanh thu: query table_sessions có end_time nằm trong [start_date, end_date], tính tổng tiền, đếm số session, tính trung bình. Tham số: start_date (date), end_date (date). Trả về: report (dict) = {total_revenue: float, session_count: int, avg_charge_per_session: float}.
-- `add_billiard_table` — Admin thêm bàn bida mới: gọi db.validate_price(price_per_hour), insert vào bảng billiard_tables (status='available'). Tham số: table_name (str), price_per_hour (float). Trả về: table_id (int), raise Exception nếu giá không hợp lệ.
-- `configure_table_price` — Admin cấu hình/cập nhật giá bàn: gọi db.validate_price(new_price_per_hour), update bảng billiard_tables set price_per_hour. Tham số: table_id (int), new_price_per_hour (float). Trả về: True nếu thành công, raise Exception nếu giá không hợp lệ hoặc table_id không tồn tại.
+- `open_session` — Mở session cho bàn bi-a. Input: table_id (int), customer_name (str). Logic: kiểm tra trạng thái bàn (phải trống), tạo record session mới (status=mở), cập nhật status bàn thành 'đang dùng'. Output: session_id (int) nếu thành công, hoặc dict {'error': message} nếu lỗi.
+- `close_session` — Đóng session và tính tổng tiền. Input: session_id (int). Logic: tính end_time, tính total_hours từ start_time-end_time, truy vấn pricing_config để lấy price_per_hour theo khung giờ, tính total_amount, cập nhật session (status=đóng, end_time), cập nhật bàn (status=trống). Output: dict {'session_id': int, 'table_id': int, 'total_hours': float, 'price_per_hour': float, 'total_amount': float}.
+- `add_service` — Thêm dịch vụ phụ vào session (thêm order_item). Input: session_id (int), service_id (int), quantity (int). Logic: validate session tồn tại và status=mở, thêm order_item (session_id, service_id, quantity, giá), tính order_total = tổng tiền service cho session này. Output: order_total (float) nếu thành công, hoặc dict {'error': message} nếu lỗi.
+- `configure_system` — Cấu hình hệ thống quản lý bàn và giá. Input: action (str: 'add_table'|'update_table'|'delete_table'|'set_pricing'), data (dict). Logic: validate dữ liệu (giá > 0, table_id hợp lệ), thực hiện action tương ứng (INSERT/UPDATE/DELETE). Output: dict {'success': true, 'message': str} hoặc {'success': false, 'error': str}.
+- `get_revenue_report` — Lấy báo cáo doanh thu theo khoảng thời gian. Input: start_date (str: YYYY-MM-DD), end_date (str: YYYY-MM-DD). Logic: truy vấn tất cả sessions đóng trong khoảng [start_date, end_date], tính total_revenue, tính revenue_by_table {table_id: tổng_tiền}, tính revenue_by_day {ngày: tổng_tiền}. Output: dict {'total_revenue': float, 'revenue_by_table': {}, 'revenue_by_day': {}}.
+- `validate_action` — Validate điều kiện trước mở/đóng session. Input: table_id hoặc session_id (int), action (str: 'open'|'close'). Logic: nếu action='open' thì check table_id tồn tại và status=trống, nếu action='close' thì check session_id tồn tại và status=mở. Output: tuple (is_valid: bool, error_message: str) — nếu hợp lệ thì ('', '')*True, nếu không thì (False, 'reason').
 
