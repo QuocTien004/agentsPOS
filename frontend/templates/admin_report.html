@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Revenue Report - Pool POS{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1>Revenue Report</h1>
+</div>
+
+<div class="filter-section">
+    <form method="GET" class="form form-inline">
+        <div class="form-group">
+            <label for="start_date">From:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+        </div>
+        <div class="form-group">
+            <label for="end_date">To:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+</div>
+
+<div class="kpi-cards">
+    <div class="kpi-card">
+        <h3>Total Revenue</h3>
+        <p class="kpi-value">{{ report.total_revenue:,.0f }}</p>
+    </div>
+</div>
+
+{% if report.revenue_by_table %}
+<div class="table-section">
+    <h2>Revenue by Table</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Table</th>
+                <th>Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for table_name, revenue in report.revenue_by_table.items() %}
+            <tr>
+                <td>{{ table_name }}</td>
+                <td>{{ revenue:,.0f }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if report.revenue_by_day %}
+<div class="table-section">
+    <h2>Revenue by Day</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day, revenue in report.revenue_by_day.items() %}
+            <tr>
+                <td>{{ day }}</td>
+                <td>{{ revenue:,.0f }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

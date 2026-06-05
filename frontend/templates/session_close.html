@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Close Session - Pool POS{% endblock %}
+
+{% block content %}
+<div class="close-session">
+    <h1>Close Session</h1>
+    
+    <div class="summary-box">
+        <h2>Session Summary</h2>
+        <table class="summary-table">
+            <tr>
+                <td>Table:</td>
+                <td><strong>{{ session.table_name }}</strong></td>
+            </tr>
+            <tr>
+                <td>Customer:</td>
+                <td><strong>{{ session.customer_name }}</strong></td>
+            </tr>
+            <tr>
+                <td>Session Duration:</td>
+                <td><strong>{{ hours }} hours</strong></td>
+            </tr>
+            <tr>
+                <td>Rate:</td>
+                <td><strong>{{ price_per_hour:,.0f }} / hour</strong></td>
+            </tr>
+            <tr>
+                <td>Table Charge:</td>
+                <td><strong>{{ (hours * price_per_hour):,.0f }}</strong></td>
+            </tr>
+            <tr>
+                <td>Services:</td>
+                <td><strong>{{ services_total:,.0f }}</strong></td>
+            </tr>
+            <tr class="total-row">
+                <td>TOTAL:</td>
+                <td class="total-amount">{{ total:,.0f }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <form method="POST" class="form">
+        <button type="submit" class="btn btn-danger">Confirm & Close Session</button>
+        <a href="{{ url_for('session_detail', session_id=session.id) }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

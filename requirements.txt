@@ -1,0 +1,6 @@
+# Runtime dependencies for the generated POS app.
+Flask>=3.0
+python-dotenv>=1.0
+
+# Test runner used by the agentsPOS pipeline tests.
+pytest>=7.0

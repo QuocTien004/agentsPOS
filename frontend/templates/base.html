@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pool POS{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% if session.user %}
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="navbar-brand">🎱 Pool POS</a>
+            <div class="nav-right">
+                <span class="user-info">{{ session.user.username }} · {{ session.user.role }}</span>
+                {% if session.user.role == 'admin' %}
+                <a href="{{ url_for('admin_pricing') }}" class="nav-link">Pricing</a>
+                <a href="{{ url_for('admin_config') }}" class="nav-link">Config</a>
+                <a href="{{ url_for('admin_report') }}" class="nav-link">Report</a>
+                {% else %}
+                <a href="{{ url_for('tables') }}" class="nav-link">Tables</a>
+                <a href="{{ url_for('session_open') }}" class="nav-link">Open Session</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}" class="nav-link logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

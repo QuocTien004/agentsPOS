@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Session - Pool POS{% endblock %}
+
+{% block content %}
+<div class="session-detail">
+    <div class="session-header">
+        <h1>Session #{{ session.id }}</h1>
+        <div class="session-info">
+            <p><strong>Table:</strong> {{ session.table_name }}</p>
+            <p><strong>Customer:</strong> {{ session.customer_name }}</p>
+            <p><strong>Started:</strong> {{ session.start_time }}</p>
+        </div>
+    </div>
+    
+    <div class="session-content">
+        <div class="services-section">
+            <h2>Add Service</h2>
+            <form method="POST" action="{{ url_for('add_service_to_session', session_id=session.id) }}" class="form form-inline">
+                <div class="form-group">
+                    <label for="service_id">Service:</label>
+                    <select id="service_id" name="service_id" required>
+                        <option value="">-- Select --</option>
+                        {% for srv in available_services %}
+                        <option value="{{ srv.id }}">{{ srv.name }} ({{ srv.price:,.0f}})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Qty:</label>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </form>
+        </div>
+        
+        {% if services %}
+        <div class="services-list">
+            <h2>Services Added</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for srv in services %}
+                    <tr>
+                        <td>Service #{{ srv.service_id }}</td>
+                        <td>{{ srv.quantity }}</td>
+                        <td>{{ srv.unit_price:,.0f }}</td>
+                        <td>{{ (srv.quantity * srv.unit_price):,.0f }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        <div class="total-section">
+            <p class="total-amount">Current Services Total: <strong>{{ total:,.0f }}</strong></p>
+            <a href="{{ url_for('session_close', session_id=session.id) }}" class="btn btn-danger">Close Session & Pay</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

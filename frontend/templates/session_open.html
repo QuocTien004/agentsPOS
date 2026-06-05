@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Open Session - Pool POS{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Open New Session</h1>
+    
+    <form method="POST" class="form">
+        <div class="form-group">
+            <label for="table_id">Select Table:</label>
+            <select id="table_id" name="table_id" required>
+                <option value="">-- Choose Table --</option>
+                {% for table in available %}
+                <option value="{{ table.id }}">{{ table.name }} ({{ table.location or 'N/A' }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="customer_name">Customer Name:</label>
+            <input type="text" id="customer_name" name="customer_name" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Open Session</button>
+        <a href="{{ url_for('tables') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

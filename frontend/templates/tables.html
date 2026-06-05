@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Tables - Pool POS{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1>Pool Tables</h1>
+    {% if session.user.role == 'admin' %}
+    <button class="btn btn-sm" onclick="toggleForm('addTableForm')">+ Add Table</button>
+    {% endif %}
+</div>
+
+{% if session.user.role == 'admin' %}
+<div id="addTableForm" class="form-section hidden">
+    <h3>Add New Table</h3>
+    <form method="POST" class="form">
+        <input type="hidden" name="action" value="add_table">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="table_name">Table Name:</label>
+                <input type="text" id="table_name" name="table_name" required>
+            </div>
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location">
+            </div>
+            <button type="submit" class="btn btn-primary">Add</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<div class="tables-grid">
+    {% for table in tables %}
+    <div class="table-card status-{{ table.status }}">
+        <h3>{{ table.name }}</h3>
+        <p class="location">{{ table.location or 'N/A' }}</p>
+        <p class="status-badge">{{ table.status.replace('_', ' ').title() }}</p>
+        
+        {% if table.status == 'empty' %}
+        <a href="{{ url_for('session_open') }}?table_id={{ table.id }}" class="btn btn-primary">Open Session</a>
+        {% elif table.status == 'in_use' %}
+        <p class="text-muted">In Use</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

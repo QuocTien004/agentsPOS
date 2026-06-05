@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}System Config - Pool POS{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1>System Configuration</h1>
+</div>
+
+<div class="form-section">
+    <h2>Add New Table</h2>
+    <form method="POST" class="form">
+        <input type="hidden" name="action" value="add_table">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="table_name">Table Name:</label>
+                <input type="text" id="table_name" name="table_name" required>
+            </div>
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Table</button>
+        </div>
+    </form>
+</div>
+
+{% if tables %}
+<div class="table-section">
+    <h2>Tables Management</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in tables %}
+            <tr>
+                <td>{{ t.id }}</td>
+                <td>{{ t.name }}</td>
+                <td>{{ t.location or '-' }}</td>
+                <td><span class="badge badge-{{ t.status }}">{{ t.status.title() }}</span></td>
+                <td>
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="action" value="delete_table">
+                        <input type="hidden" name="table_id" value="{{ t.id }}">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
